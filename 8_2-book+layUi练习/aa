@@ -1,0 +1,47 @@
+entity-->mapper-->resources/mapper-->test-->dto/page-->sevice+impl-->test
+
+controller
+1 BookController （两个头，一个注解用于扫描，一个注解用于跨域）
+2 CategoryController （两个头，一个注解用于扫描，一个注解用于跨域）
+
+dto
+1 Result -->规定前端返回的格式
+2 Message -->定义前端返回信息格式
+
+完善controller层
+1 CategoryController
+2  使用postman测试 ==>localhost:8080/getCategoryList
+=============>这个成功后在测试统一异常处理
+
+1 创建一个com.yuanjingyu.handlers.BookExceptionHandler处理异常
+2 在applicationContext-mybatis.xml里面排除ControllerAdvice注解，不然会实例化
+3 使用postman测试 ==>localhost:8080/getCategoryList
+=============>测试统一异常处理
+
+1 写BookController的增删改查接口
+2 写完请去postman测试接口
+============》
+
+1 加3个jar包
+   <!-- mybatis -->
+    <dependency>
+      <groupId>org.mybatis</groupId>
+      <artifactId>mybatis-ehcache</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <!-- ehcache -->
+    <dependency>
+      <groupId>net.sf.ehcache</groupId>
+      <artifactId>ehcache</artifactId>
+      <version>2.10.4</version>
+    </dependency>
+    <!--日志-->
+     <dependency>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+          <version>1.7.21</version>
+        </dependency>
+2 mybatis-config.xml开启二级缓存
+3 CategoryMapper.xml开启二级缓存配置
+4 log4j.properties
+5 重启服务器

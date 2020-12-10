@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+    <head>
+        <meta charset="UTF-8">
+        <title>欢迎页面-X-admin2.2</title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+        <link rel="stylesheet" href="./css/font.css">
+        <link rel="stylesheet" href="./css/xadmin.css">
+        <script src="./lib/layui/layui.js" charset="utf-8"></script>
+        <script type="text/javascript" src="./js/xadmin.js"></script>
+    </head>
+    <body>
+        <div class="x-nav">
+          <span class="layui-breadcrumb">
+            <a href="">首页</a>
+            <a href="">演示</a>
+            <a>
+              <cite>导航元素</cite></a>
+          </span>
+          <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" onclick="location.reload()" title="刷新">
+            <i class="layui-icon layui-icon-refresh" style="line-height:30px"></i></a>
+        </div>
+        <div class="layui-fluid">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <div class="layui-card"></div>
+                        <div class="layui-card-header">
+							<button class="layui-btn" onclick="xadmin.open('添加图书','./book-add.html',500,400)"><i class="layui-icon"></i>添加</button>
+                        </div>
+                        <div class="layui-card-body layui-table-body layui-table-main">
+                            <table id="bookListTable" lay-filter="test"></table><!-- 数据表格 -->
+                        </div>
+                  <!--      <div class="layui-card-body"></div> -->
+                    </div>
+                </div>
+            </div>
+			
+        </div> 
+		
+		<script>
+		 
+		layui.use(['table', 'layer','jquery'],function(){
+	
+		  var table = layui.table;		/* 获取table对象 */
+		  // var layer = layui.layer;		/* 获取弹出层对象 */
+		  var $ = layui.jquery;         /* 获取jquery对象*/
+		  
+		  table.render({
+		   elem: '#bookListTable',
+		   url: "http://localhost:8081/getBookPage", //数据接口
+		   request:{
+				pageName:"pageNo",
+				limitName:"pageSize"
+		   },
+			parseData:function(d){
+				console.log(d);
+				var code = d.message.code;
+				var msg = d.message.msg;
+				var count = d.data.count;
+				var data = d.data.obj;
+				return {
+					"code":code,
+					"mag":msg,
+					"count":count,
+					"data":data
+				}
+			},
+			
+			page:true, /* 开启分页*/
+			limit:2,
+			limits:[2,4,6,8,10],
+			
+		    cols:[[ //表头
+		      {field: 'bookId', title: '图书ID', width:"10%", sort: true, fixed: 'left'},
+		      {field: 'bookName', title: '图书名字', width:"16%"},
+		      {field: 'authorName', title: '作者名字', width:"16%", sort: true},
+		      {field: 'price', title: '价格', width:"16%"} ,
+		      {field: 'categoryName', title: '图书分类', width: "16%",templet:function(d){return d.category.categoryName}},
+			  {
+			  	  title:"操作",
+			  	  align:'center',
+			  	  width:"16%",
+			  	  templet:function(d){
+			  		  var str="<a href='#' class=\"layui-btn layui-btn-xs\" lay-event='edit'>编辑</a>";
+			  		  str+="<a href='#' class=\"layui-btn layui-btn-danger layui-btn-xs\" lay-event='del'>删除</a>";
+			  		  return str;
+			  	  }
+			  }	  
+		    ]]
+			
+		  })
+		  
+		  //获取删除事件
+		  table.on('tool(test)',function(d){
+			  console.log("-------------->",d);
+			  if(d.event=='del'){	
+				
+				  layer.confirm("确定删除?",function(index){   // 删除提示,是否删除 
+					 d.del(); // 删除当前行的dom对象 
+					 layer.close(index);
+					 $.getJSON("http://localhost:8081/deleteBook",{"bookId":d.data.bookId},function(d){    //使用AJAX删除
+						 console.log("删除完成:"+d);
+						 location.reload();		//关闭弹出层,刷新当前页面
+					 });								
+				  });
+			  }	else if(d.event=='edit'){
+				  layer.open({		//弹出更新页面
+					type: 2,
+					title: '修改图书',
+					closeBtn: 1, //显示关闭按钮
+					anim: 6,
+					area: ['600px','400px'],
+					shadeClose: true, //开启遮罩关闭
+					content: "book-update.html",
+					success:function(layero, index){
+						console.log(layero,index);
+						var body = layer.getChildFrame("body",index);//获取弹出层的body元素
+						//获取body元素中的图书名称,作者标签,价格标签.图书id
+						body.find("#bookId").val(d.data.bookId);
+						body.find("#bookName").val(d.data.bookName);
+						body.find("#authorName").val(d.data.authorName);
+						body.find("#price").val(d.data.price);
+						body.find("#categoryId").val(d.data.categoryId);
+						
+						//弹出层页面下拉回显
+						layero.find('iframe').contents().find('[name="categoryId"]').val(d.data.categoryId);
+						//对弹出层进行刷新
+						var iframeWindow = layero.find('iframe')[0].contentWindow;
+						//重新渲染
+						iframeWindow.layui.form.render();
+						
+					}
+				  });
+			  }		
+		  });
+		  
+		  
+		});
+		
+		</script>
+		
+    </body>
+    
+</html>
